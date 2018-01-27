@@ -9,7 +9,7 @@ SerialPort.list()
 })
 .then((possibleEggPorts) => {
     possibleEggPorts.forEach((p) => {        
-        let bufferedData = "";
+        let bufferedData = `Port: ${p.comName}\r\n\r\n`;
         let serialNumber;    
         let outputStream;  
         let lineBuffer = "";
