@@ -11,6 +11,7 @@ SerialPort.list()
 .then((possibleEggPorts) => {
     possibleEggPorts.forEach((p) => {        
         let bufferedData = `Port: ${p.comName}\r\n\r\n`;
+	bufferedData = bufferedData.concat(moment().subtract(1, 'second').format() + ',egg');
         let serialNumber;    
         let outputStream;  
         let lineBuffer = "";
@@ -20,7 +21,7 @@ SerialPort.list()
                port.write('\r');
                setInterval(() => port.write('\r'), 1000);
 	   }, 500);
-		
+	    let firstData = true;	
             const parser = port.pipe(new SerialPort.parsers.ByteLength({length: 1}));
             parser.on('data', (data) => {
                 data = data.toString();
@@ -29,7 +30,7 @@ SerialPort.list()
                     let temp = /[0-9a-f]{12}/.exec(bufferedData);
                     if(temp){
                         serialNumber = temp[0];
-                        outputStream = fs.createWriteStream(`${serialNumber}.txt`,{encoding: 'utf8'});
+                        outputStream = fs.createWriteStream(`egg${serialNumber}.txt`,{encoding: 'utf8'});
                         outputStream.write(bufferedData);
 
                         // set up a process exit handler to gracefully close the stream
@@ -57,7 +58,9 @@ SerialPort.list()
 
                 // handle line buffer and console output
                 if(data === '\n'){
-                    console.log(`${moment().format()},${lineBuffer}`);
+		    const date = moment().subtract(1, 'second').format();			
+		    outputStream.write(date + ',egg'); 
+                    console.log(`${date},egg${lineBuffer}`);
                     lineBuffer = "";
                 }
                 else if(data !== '\r'){
