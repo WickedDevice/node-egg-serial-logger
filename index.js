@@ -1,5 +1,6 @@
 const fs = require('fs');
 const SerialPort = require('serialport');
+const moment = require('moment');
 
 SerialPort.list()
 .then((ports) => {
@@ -56,7 +57,7 @@ SerialPort.list()
 
                 // handle line buffer and console output
                 if(data === '\n'){
-                    console.log(`${lineBuffer}`);
+                    console.log(`${moment().format()},${lineBuffer}`);
                     lineBuffer = "";
                 }
                 else if(data !== '\r'){
