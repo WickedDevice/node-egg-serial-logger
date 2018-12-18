@@ -25,7 +25,7 @@ SerialPort.list()
                 data = data.toString();
                 if(!serialNumber){
                     bufferedData = bufferedData.concat(data);
-                    let temp = /egg[0-9a-f]{16}/.exec(bufferedData);
+                    let temp = /[0-9a-f]{12}/.exec(bufferedData);
                     if(temp){
                         serialNumber = temp[0];
                         outputStream = fs.createWriteStream(`${serialNumber}.txt`,{encoding: 'utf8'});
