@@ -4,7 +4,7 @@ const SerialPort = require('serialport');
 SerialPort.list()
 .then((ports) => {
     // Eggs all use FTDI UART-to-USB chips
-    ports = ports.filter(p => p.manufacturer === 'FTDI');
+    ports = ports.filter(p => ['Silicon Labs', 'FTDI'].indexOf(p.manufacturer) >= 0);
     return ports;    
 })
 .then((possibleEggPorts) => {
@@ -15,6 +15,11 @@ SerialPort.list()
         let lineBuffer = "";
         openPort(p.comName)
         .then((port) => {
+	    setTimeout(() => {
+               port.write('\r');
+               setInterval(() => port.write('\r'), 1000);
+	   }, 500);
+		
             const parser = port.pipe(new SerialPort.parsers.ByteLength({length: 1}));
             parser.on('data', (data) => {
                 data = data.toString();
@@ -51,7 +56,7 @@ SerialPort.list()
 
                 // handle line buffer and console output
                 if(data === '\n'){
-                    console.log(`${serialNumber}: ${lineBuffer}`);
+                    console.log(`${lineBuffer}`);
                     lineBuffer = "";
                 }
                 else if(data !== '\r'){
@@ -74,7 +79,7 @@ let openPort = (comName) => {
     return new Promise((resolve, reject) => {
         // open the port
         let port = new SerialPort(comName, {
-            baudRate: 115200
+            baudRate: 9600// 115200
         }, (err) => {
             if (err) {                
                 reject(err);
