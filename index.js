@@ -5,11 +5,14 @@ const moment = require('moment');
 SerialPort.list()
 .then((ports) => {
     // Eggs all use FTDI UART-to-USB chips
-    ports = ports.filter(p => ['Silicon Labs', 'FTDI'].indexOf(p.manufacturer) >= 0);
+    // console.log(ports);
+    ports = ports.filter(p => ['Arduino (www.arduino.cc)', 'Silicon Labs', 'FTDI'].indexOf(p.manufacturer) >= 0);
+    // console.log(ports);
     return ports;    
 })
 .then((possibleEggPorts) => {
     possibleEggPorts.forEach((p) => {        
+	let once = true;
         let bufferedData = `Port: ${p.comName}\r\n\r\n`;
 	bufferedData = bufferedData.concat(moment().subtract(1, 'second').format() + ',egg');
         let serialNumber;    
@@ -17,19 +20,21 @@ SerialPort.list()
         let lineBuffer = "";
         openPort(p.comName)
         .then((port) => {
-	    setTimeout(() => {
-               port.write('\r');
-               setInterval(() => port.write('\r'), 1000);
-	   }, 500);
 	    let firstData = true;	
             const parser = port.pipe(new SerialPort.parsers.ByteLength({length: 1}));
             parser.on('data', (data) => {
                 data = data.toString();
-                if(!serialNumber){
+		if(!serialNumber){
                     bufferedData = bufferedData.concat(data);
                     let temp = /[0-9a-f]{12}/.exec(bufferedData);
+		    
+		    if(once) { 
+	              temp = 1;
+		      once = false;
+	            }
                     if(temp){
-                        serialNumber = temp[0];
+                        serialNumber = 'kwj-data-' + p.comName.replace(/[\\\/]/g, '-');
+			console.log('Creating Write Stream for port ', p.comName);
                         outputStream = fs.createWriteStream(`egg${serialNumber}.txt`,{encoding: 'utf8'});
                         outputStream.write(bufferedData);
 
@@ -83,7 +88,7 @@ let openPort = (comName) => {
     return new Promise((resolve, reject) => {
         // open the port
         let port = new SerialPort(comName, {
-            baudRate: 9600// 115200
+            baudRate:  115200
         }, (err) => {
             if (err) {                
                 reject(err);
