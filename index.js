@@ -115,4 +115,6 @@ let openPort = async (comName) => {
   setInterval(() => {
     port.write('\r');
   }, 1000);
+
+  return port;
 };
