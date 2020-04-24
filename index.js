@@ -89,7 +89,7 @@ let openPort = async (comName) => {
   let port = await new Promise((resolve, reject) => {
     // open the port
     let port = new SerialPort(comName, {
-      baudRate: 115200
+      baudRate: 9600
     }, (err) => {
       if (err) {
         reject(err);
